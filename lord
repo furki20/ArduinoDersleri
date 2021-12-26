@@ -1,0 +1,86 @@
+/*Hız kontrol pinleri*/
+int enA = 5; //ilk motor hız kontrolü
+int enB = 6; //ikinci motor hız kontrolü
+
+/*Yön kontrol pinleri*/
+int in1 = 9; //sağ motor birinci kutup
+int in2 = 10; //sağ motor ikinci kutup
+int in3 = 11; //sol motor birinci kutup
+int in4 = 12; //sol motor ikinci kutup
+
+String satir = "";
+int yon = 0;
+int hiz = 0;
+int semiColonPos = 0;
+
+void setup() {  
+  pinMode(enA, OUTPUT);
+  pinMode(enB, OUTPUT);
+  
+  pinMode(in1, OUTPUT);
+  pinMode(in2, OUTPUT);
+  pinMode(in3, OUTPUT);
+  pinMode(in4, OUTPUT);
+
+  Serial.begin(9600);
+  //Zaman aşımı süresi appinventor timer süresi (15ms) 
+  //ile uyumlu hale getiriliyor
+  Serial.setTimeout(15); 
+}
+
+void loop() {  
+  if (Serial.available()>0)
+  {
+    satir = Serial.readString(); //15ms zaman aşımı
+    /*
+     * Gönderilen veri Yön;Hız formatındadır.
+     * Yön için: 1-> Sağa, 2->Sola, 3->İleri, 4->Geri, 5->Dur
+     * Hız için değer aralığı 0..255'tir.
+    */
+    semiColonPos = satir.indexOf(';');    
+    yon = satir.substring(0,semiColonPos).toInt();  
+    hiz = satir.substring(semiColonPos+1).toInt();
+
+    analogWrite(enA, hiz);
+    analogWrite(enB, hiz);
+
+    switch (yon)
+    {
+      case 1: //Sağa dön
+        digitalWrite(in1, HIGH);
+        digitalWrite(in2, LOW);
+        digitalWrite(in3, HIGH);
+        digitalWrite(in4, HIGH);
+        Serial.print("Sağa dönüyorum");
+        break;
+      case 2: //Sola dön
+        digitalWrite(in1, HIGH);
+        digitalWrite(in2, HIGH);
+        digitalWrite(in3, HIGH);
+        digitalWrite(in4, LOW);     
+        Serial.print("Sola dönüyorum"); 
+        break;
+      case 3: //İleri
+        digitalWrite(in1, HIGH);
+        digitalWrite(in2, LOW);
+        digitalWrite(in3, HIGH);
+        digitalWrite(in4, LOW);      
+        Serial.print("İleri gidiyorum"); 
+        break;
+      case 4: //Geri
+        digitalWrite(in1, LOW);
+        digitalWrite(in2, HIGH);
+        digitalWrite(in3, LOW);
+        digitalWrite(in4, HIGH);  
+        Serial.print("Geri gidiyorum");     
+        break;
+      case 0: //Dur
+        digitalWrite(in1, HIGH);
+        digitalWrite(in2, HIGH);
+        digitalWrite(in3, HIGH);
+        digitalWrite(in4, HIGH);      
+        Serial.print("Durdum"); 
+        break;
+    }      
+  }  
+} 
